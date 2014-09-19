@@ -18,11 +18,19 @@ If you require a server, please follow the official socket.io docs
 ## Notes
 You need a functioning socket.io server running
 
+<<<<<<< HEAD
+=======
+- Start the demo socket.io/web server using
+>>>>>>> 425cb5813f73910835d1143e12dec6a5769aee44
 
 ## Release History
 
 * 0.1.0 Initial release
 
+<<<<<<< HEAD
+=======
+- Navigate to localhost:8090/demo-chat-client.html to try it out
+>>>>>>> 425cb5813f73910835d1143e12dec6a5769aee44
 
 ## Licence
 MIT
