@@ -83,7 +83,7 @@
          */
         debug: false,
         /**
-         * token` 
+         * token`
          * defaults to undefined
          *
          * @attribute debug
@@ -91,10 +91,12 @@
          */
         token: undefined,
 
-
-
+        /**
+         * The `attached` method will initialize the client and launch the connection
+         *
+         * @method attached
+         */
         attached: function() {
-            console.log("En Attached");
             window.onbeforeunload = this.beforeUnload.bind(this);
             this.init();
             if (this.autoConnect) {
@@ -102,6 +104,11 @@
                 this.connect();
             }
         },
+        /**
+         * Client initialization
+         *
+         * @method init
+         */
         init: function() {
             if (this.debug) {
                 console.log("------------------------------------------");
@@ -114,7 +121,8 @@
             if (window.io == undefined) throw new Error("Could not import socket.io library");
 
             var options = {
-              'auto connect': false            };
+                'auto connect': false
+            };
 
             if (this.token != undefined) options['query'] = 'token=' + this.token;
 
@@ -189,7 +197,12 @@
         connect: function() {
             if (this.debug) console.log("Connecting... (disconnect + connect)");
             this.disconnect();
-            this.ws.connect();
+
+            // Launching onConnect to emit the message to join the rooms
+            this._connected = true;
+            this.onConnect(null);
+            //this.ws.connect();
+            if (this.debug) console.log("Ya lanzados ambos en las rooms " + this.rooms);
         },
         /**
          * The `disconnect` method will ...disconnect this instance from the server
@@ -206,10 +219,10 @@
                 }
             }
         },
+
         //change handlers
         connectedChanged: function(oldValue, newValue) {
             this._connected = newValue;
-
             if (this._connected) {
                 if (this.debug) console.log("Connected attribute changed. Connecting...");
                 this.connect();
@@ -220,9 +233,15 @@
                 }
             }
         },
+        roomsChanged: function() {
+            if (this.debug) console.log("Rooms changed");
+            if (this._connected) this.connect();
+        },
         outMessageChanged: function() {
-            console.log("Ha llegado un mensaje");
-            console.log(this.outMessage);
+            if (this.debug) {
+                console.log("Ha llegado un mensaje");
+                console.log(this.outMessage);
+            }
             if (this.outMessage) {
                 var fullMessage = this.outMessage;
                 var eventName = this.outEventName;
@@ -259,23 +278,24 @@
                 }
             }
         },
+        
         //event handlers
         onConnect: function(event) {
-            console.log("En el metodo connect");
+            if (this.debug) console.log("En el metodo connect");
             if (this._connected) {
                 console.log("polymer-socket-io connected");
                 for (var i = 0; i < this.rooms.length; i++) this.emit('join', this.rooms[i]);
                 this._connected = true;
-                this.connected = true;
+                //this.connected = true;
                 this.fire('s-io-connected');
             }
         },
         onDisconnect: function(event) {
             if (!this._connected) {
-                console.log("polymer-socket-io disconnected");
+                if (this.debug) console.log("polymer-socket-io disconnected");
                 for (var i = 0; i < this.rooms.length; i++) this.emit('leave', this.rooms[i]);
                 this._connected = false;
-                this.connected = false;
+                //this.connected = false;
                 this.fire('s-io-disconnected');
             }
         },
@@ -286,9 +306,11 @@
             console.log('Reconnect failed polymer-socket-io', error);
         },
         onMessageReceived: function(event, msg) {
-            console.log("Ha llegado un mensaje");
-            console.log(this.event);
-            console.log(msg);
+            if (this.debug) {
+                console.log("Ha llegado un mensaje");
+                console.log(this.event);
+                console.log(msg);
+            }
             this.inMessage = {
                 event: event,
                 data: msg
