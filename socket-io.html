@@ -35,16 +35,25 @@
          * @type bool
          */
         autoConnect: false,
-        /** The `connected` attribute is switched based on connection stations
-         *
-         * @attribute connected
-         * @type bool
-         */
-        publish: {
-            get connected() {
-                return this._connected;
-            }
-        },
+        /** The `reconnected` toggles the automatic reconnection after errors etc
+        * 
+        * @attribute autoReConnect
+        * @type bool
+        */
+        autoReConnect: false,
+        /** The `connected` attribute is switched based on connection status, shadowing
+        *  the interal _connected attribute
+        * 
+        * @attribute connected
+        * @type bool
+        */
+        connected:null,
+      
+        /** internal attribute is switched based on connection stations
+        * 
+        * @attribute _connected
+        * @type bool
+        */
         _connected: false,
         /**
          * The `outEventName` attribute sets the current outgoing event's 'name'
@@ -121,7 +130,8 @@
             if (window.io == undefined) throw new Error("Could not import socket.io library");
 
             var options = {
-                'auto connect': false
+                autoConnect: this.autoConnect,
+                reconnection:this.autoReConnect
             };
 
             if (this.token != undefined) options['query'] = 'token=' + this.token;
@@ -199,9 +209,9 @@
             this.disconnect();
 
             // Launching onConnect to emit the message to join the rooms
-            this._connected = true;
-            this.onConnect(null);
-            //this.ws.connect();
+            //this._connected = true;
+            //this.onConnect(null);
+            this.ws.connect();
             if (this.debug) console.log("Ya lanzados ambos en las rooms " + this.rooms);
         },
         /**
@@ -221,7 +231,11 @@
         },
 
         //change handlers
-        connectedChanged: function(oldValue, newValue) {
+        //change handlers
+        _connectedChanged: function(oldValue) {
+            this.connected = this._connected;
+        },
+        /*connectedChanged: function(oldValue, newValue) {
             this._connected = newValue;
             if (this._connected) {
                 if (this.debug) console.log("Connected attribute changed. Connecting...");
@@ -232,7 +246,7 @@
                     this.disconnect();
                 }
             }
-        },
+        },*/
         roomsChanged: function(oldValue, newValue) {
             if (this.debug) {
                 console.log("Rooms changed");
@@ -241,6 +255,7 @@
             }
             for (var i = 0; i < oldValue.length; i++) this.emit('leave', oldValue[i]);
             if (this._connected) this.connect();
+            for (var i = 0; i < newValue.length; i++) this.emit('join', newValue[i]);
             
         },
         outMessageChanged: function() {
@@ -257,14 +272,14 @@
                         fullMessage = fullMessage.data;
                     }
                 }
-                if ("room" in fullMessage) this.emitRoom(fullMessage.room, eventName, fullMessage);
-                this.emit(eventName, fullMessage);
+                if ("room" in fullMessage) this.emitRoom(eventName, fullMessage, fullMessage.room);
+                else this.emit(eventName, fullMessage);
             }
         },
         socketUrlChanged: function() {
             if (this.debug) console.log("Socket URL changed");
             if (this._connected) {
-                this.disconnect();
+                //this.disconnect();
                 this.connect();
             }
         },
@@ -272,9 +287,10 @@
             if (this.debug) console.log("Namespace attribute changed");
             if (this._connected) this.connect();
         },
-        listenToChanged: function(oldListenTo) {
+        listenToChanged: function(oldListenTo, newListenTo) {
             if (this.debug) console.log("ListenTo attribute changed");
-            if (this.ws != undefined && this._connected) {
+            //if (this.ws != undefined && this._connected) {
+            if (this.ws != undefined) {
                 if (oldListenTo) {
                     for (var i = 0; i < oldListenTo.length; i++) {
                         var messageName = oldListenTo[i];
@@ -291,22 +307,22 @@
         //event handlers
         onConnect: function(event) {
             if (this.debug) console.log("En el metodo connect");
-            if (this._connected) {
+            //if (this._connected) {
                 console.log("polymer-socket-io connected");
-                for (var i = 0; i < this.rooms.length; i++) this.emit('join', this.rooms[i]);
                 this._connected = true;
+                for (var i = 0; i < this.rooms.length; i++) this.emit('join', this.rooms[i]);
                 //this.connected = true;
                 this.fire('s-io-connected');
-            }
+            //}
         },
         onDisconnect: function(event) {
-            if (!this._connected) {
+            //if (!this._connected) {
+                this._connected = false;
                 if (this.debug) console.log("polymer-socket-io disconnected");
                 for (var i = 0; i < this.rooms.length; i++) this.emit('leave', this.rooms[i]);
-                this._connected = false;
                 //this.connected = false;
                 this.fire('s-io-disconnected');
-            }
+            //}
         },
         onError: function(error) {
             console.log('Error in polymer-socket-io', error);

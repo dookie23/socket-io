@@ -1,18 +1,18 @@
 {
   "name": "socket-io",
-  "version": "0.0.0",
-  "description": "socket.io web component (polymer)",
+  "version": "0.1.2",
+  "description": "This work is an adaptation of https://github.com/kaosat-dev/socket-io. This adaptation includes the use and configuration of the 'room' mechanism in the socket.",
   "main": "",
   "repository": {
     "type": "git",
-    "url": "kaosat-dev/socket-io"
+    "url": "dookie23/socket-io"
   },
   "keywords": [
     "websocket",
     "socketio",
     "polymer"
   ],
-  "author": "Mark \"kaosat-dev\" Moissette",
+  "author": "Agustín Cañas, Mark \"kaosat-dev\" Moissette",
   "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
