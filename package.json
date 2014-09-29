@@ -1,6 +1,6 @@
 {
   "name": "socket-io",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "This work is an adaptation of https://github.com/kaosat-dev/socket-io. This adaptation includes the use and configuration of the 'room' mechanism in the socket.",
   "main": "",
   "repository": {

@@ -180,7 +180,13 @@
         emitRoom: function(event, data, room) {
             if (this.debug) console.log("sending '" + event + "' to " + room + " via polymer-socket-io: data", data);
             try {
-                if (this.ws) this.ws.to(room).emit(event, data);
+                console.log(this.ws);
+                console.log(this.ws.io);
+                console.log(this.manager);
+                console.log(this.ws.to);
+                                if (this.ws) window.io.emit(data);
+
+                if (this.ws) this.manager.to(room).emit(data);
             } catch (error) {
                 if (this.debug) console.log("cannot send message: error:" + error);
             }
@@ -253,15 +259,23 @@
                 console.log(oldValue);
                 console.log(newValue);
             }
-            for (var i = 0; i < oldValue.length; i++) this.emit('leave', oldValue[i]);
+
+            for (var i = 0; i < oldValue.length; i++) {
+                if (newValue[i].indexOf(oldValue[i]) == -1) this.emit('leave', oldValue[i]);
+            }
+
             if (this._connected) this.connect();
-            for (var i = 0; i < newValue.length; i++) this.emit('join', newValue[i]);
+            for (var i = 0; i < newValue.length; i++) {
+                // if the room was connected previously, it avoids to resend 'the emit'
+                if (oldValue[i].indexOf(newValue[i]) == -1) this.emit('join', newValue[i]);
+            }
             
         },
         outMessageChanged: function() {
             if (this.debug) {
                 console.log("Ha llegado un mensaje");
                 console.log(this.outMessage);
+                console.log(this.outEventName);
             }
             if (this.outMessage) {
                 var fullMessage = this.outMessage;
@@ -272,8 +286,9 @@
                         fullMessage = fullMessage.data;
                     }
                 }
-                if ("room" in fullMessage) this.emitRoom(eventName, fullMessage, fullMessage.room);
-                else this.emit(eventName, fullMessage);
+                //if ("room" in fullMessage) this.emitRoom(eventName, fullMessage, fullMessage.room);
+                //else 
+                    this.emit(eventName, fullMessage);
             }
         },
         socketUrlChanged: function() {
@@ -288,7 +303,14 @@
             if (this._connected) this.connect();
         },
         listenToChanged: function(oldListenTo, newListenTo) {
-            if (this.debug) console.log("ListenTo attribute changed");
+            if (this.debug) {
+                console.log("ListenTo attribute changed");
+                console.log(this.listenTo);
+                console.log(oldListenTo);
+                console.log(newListenTo);
+
+            }
+
             //if (this.ws != undefined && this._connected) {
             if (this.ws != undefined) {
                 if (oldListenTo) {
@@ -333,7 +355,7 @@
         onMessageReceived: function(event, msg) {
             if (this.debug) {
                 console.log("Ha llegado un mensaje");
-                console.log(this.event);
+                console.log("Eevnto"+this.event);
                 console.log(msg);
             }
             this.inMessage = {
