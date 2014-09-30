@@ -21,5 +21,6 @@ If you require a server, please follow the official socket.io docs
 * 0.1.1 Room support, debug parameter and others
 * 0.1.2 Added changes in kaosat-dev/socket.io
 * 0.1.3. Fixes
+* 0.1.4. Fixes
 
 MIT

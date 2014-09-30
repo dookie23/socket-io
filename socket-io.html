@@ -261,13 +261,17 @@
             }
 
             for (var i = 0; i < oldValue.length; i++) {
-                if (newValue[i].indexOf(oldValue[i]) == -1) this.emit('leave', oldValue[i]);
+                if (newValue.indexOf(oldValue[i]) == -1) this.emit('leave', oldValue[i]);
             }
 
             if (this._connected) this.connect();
             for (var i = 0; i < newValue.length; i++) {
                 // if the room was connected previously, it avoids to resend 'the emit'
-                if (oldValue[i].indexOf(newValue[i]) == -1) this.emit('join', newValue[i]);
+                if (oldValue != undefined) {
+                    if (oldValue.indexOf(newValue[i]) == -1) 
+                        this.emit('join', newValue[i]);
+                }
+                else this.emit('join', newValue[i]);
             }
             
         },
