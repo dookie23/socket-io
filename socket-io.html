@@ -40,7 +40,7 @@
         * @attribute autoReConnect
         * @type bool
         */
-        autoReConnect: false,
+        autoReConnect: true,
         /** The `connected` attribute is switched based on connection status, shadowing
         *  the interal _connected attribute
         * 
@@ -218,7 +218,6 @@
             //this._connected = true;
             //this.onConnect(null);
             this.ws.connect();
-            if (this.debug) console.log("Ya lanzados ambos en las rooms " + this.rooms);
         },
         /**
          * The `disconnect` method will ...disconnect this instance from the server
@@ -277,7 +276,6 @@
         },
         outMessageChanged: function() {
             if (this.debug) {
-                console.log("Ha llegado un mensaje");
                 console.log(this.outMessage);
                 console.log(this.outEventName);
             }
@@ -332,13 +330,14 @@
 
         //event handlers
         onConnect: function(event) {
-            if (this.debug) console.log("En el metodo connect");
             //if (this._connected) {
                 console.log("polymer-socket-io connected");
                 this._connected = true;
                 for (var i = 0; i < this.rooms.length; i++) this.emit('join', this.rooms[i]);
                 //this.connected = true;
-                this.fire('s-io-connected');
+
+                this.fire('core-signal', {name:"s-io-connected", data: null});
+                //this.fire('s-io-connected');
             //}
         },
         onDisconnect: function(event) {
@@ -347,30 +346,29 @@
                 if (this.debug) console.log("polymer-socket-io disconnected");
                 for (var i = 0; i < this.rooms.length; i++) this.emit('leave', this.rooms[i]);
                 //this.connected = false;
-                this.fire('s-io-disconnected');
+
+                this.fire('core-signal', {name:"s-io-disconnected", data: null});
+                //this.fire('s-io-disconnected');
             //}
         },
         onError: function(error) {
-            console.log('Error in polymer-socket-io', error);
+            console.error('Error in polymer-socket-io', error);
         },
         onReconnectFailed: function(error) {
-            console.log('Reconnect failed polymer-socket-io', error);
+            console.error('Reconnect failed polymer-socket-io', error);
         },
         onMessageReceived: function(event, msg) {
-            if (this.debug) {
-                console.log("Ha llegado un mensaje");
-                console.log("Eevnto"+this.event);
-                console.log(msg);
-            }
+
+            // Public attribute support
             this.inMessage = {
                 event: event,
                 data: msg
             };
-            //console.log("firing event",'s-io-'+event);
-            this.fire('s-io-' + event, {
-                msg: msg
-            });
-            //TODO: replace with <core-signals>
+
+            // Core signals support
+            if (this.debug) console.log("firing event",'s-io-'+event);
+            this.fire('core-signal', {name:"s-io-"+event, data: msg});
+
         },
         beforeUnload: function(event) {
             if (this.debug) console.load("Before unload");
